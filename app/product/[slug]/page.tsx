@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { useCartStore } from '@/app/store/cartStore'
 import SizeSelector from '@/app/components/product/SizeSelector'
 import QuantitySelector from '@/app/components/cart/QuantitySelector'
+import { products } from '@/app/data/products'
 
 export default function ProductPage() {
   const params = useParams()
@@ -13,34 +14,26 @@ export default function ProductPage() {
 
   const addToCart = useCartStore((state) => state.addToCart)
 
-  // 🔹 Mock product (simulando respuesta API)
-  const product = {
-    id: '1',
-    slug,
-    name: 'Zapato Casual Hombre',
-    price: 120000,
-    description:
-      'Zapato casual elaborado en cuero sintético de alta calidad, ideal para uso diario. Diseñado para brindar comodidad, durabilidad y estilo. Suela antideslizante y plantilla acolchada para máximo confort.',
-    images: [
-      '/products/mock-shoe-1.jpg',
-      '/products/mock-shoe-2.jpg',
-      '/products/mock-shoe-3.jpg',
-    ],
+  const product = products.find((p) => p.slug === slug)
+
+  if (!product) {
+    return <p className="p-10">Producto no encontrado</p>
   }
+
+  const images = [product.image, product.image, product.image]
 
   const [selectedImage, setSelectedImage] = useState(0)
   const [size, setSize] = useState<number | null>(null)
-  
   const [quantity, setQuantity] = useState(1)
 
   const handleAddToCart = () => {
     if (!size) return alert('Selecciona una talla')
 
     addToCart({
-      id: product.id,
+      id: String(product.id),
       name: product.name,
       price: product.price,
-      image: product.images[0],
+      image: product.image,
       size,
       quantity,
     })
@@ -56,7 +49,7 @@ export default function ProductPage() {
         <div>
           <div className="relative w-full h-[500px] rounded-lg overflow-hidden border-b-8 border-black">
             <Image
-              src={product.images[selectedImage]}
+              src={images[selectedImage]}
               alt={product.name}
               fill
               className="object-cover"
@@ -65,7 +58,7 @@ export default function ProductPage() {
 
           {/* Thumbnails */}
           <div className="flex gap-4 mt-4">
-            {product.images.map((img, index) => (
+            {images.map((img, index) => (
               <button
                 key={index}
                 onClick={() => setSelectedImage(index)}
@@ -86,7 +79,6 @@ export default function ProductPage() {
           </div>
         </div>
 
-        {/* 🔹 PRODUCT INFO */}
         <div className="flex flex-col gap-6">
 
           <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900">
@@ -98,7 +90,7 @@ export default function ProductPage() {
           </p>
 
           <p className="text-slate-700 leading-relaxed">
-            {product.description}
+            Producto ideal para {product.useType}, con nivel de comodidad {product.comfortScore}/10.
           </p>
 
           {/* Size Selector */}
@@ -108,7 +100,7 @@ export default function ProductPage() {
           <div>
             <h3 className="font-semibold mb-2">Cantidad</h3>
             <QuantitySelector
-              quantity={quantity}
+              initialQuantity={quantity}
               onChange={setQuantity}
             />
           </div>

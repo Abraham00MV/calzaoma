@@ -45,7 +45,7 @@ export default function QuantitySelector({
     <div className="flex items-center gap-4">
       <button
         onClick={decrease}
-        className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition"
+        className="w-10 h-10 rounded-full border text-black flex items-center justify-center hover:bg-gray-100 transition"
       >
         -
       </button>
@@ -56,12 +56,12 @@ export default function QuantitySelector({
         min={min}
         max={max}
         onChange={(e) => handleManualChange(Number(e.target.value))}
-        className="w-16 text-center border border-gray-300 rounded-md py-1"
+        className="w-16 text-center border text-black rounded-md py-1"
       />
 
       <button
         onClick={increase}
-        className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition"
+        className="w-10 h-10 rounded-full border text-black flex items-center justify-center hover:bg-gray-100 transition"
       >
         +
       </button>

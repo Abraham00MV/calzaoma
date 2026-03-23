@@ -15,6 +15,7 @@ export default function Home() {
           priority
           className="object-cover"
         />
+
         {/* Contenido */}
         <div className="relative z-10 max-w-7xl mx-auto px-6 flex flex-col items-center text-center gap-6 text-white">
           <div className="w-28 h-28 bg-white rounded-full flex items-center justify-center shadow-lg overflow-hidden">
@@ -26,25 +27,37 @@ export default function Home() {
               className="object-cover"
             />
           </div>
+
           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight">
             CalzaOma
           </h1>
+
           <p className="text-lg md:text-xl max-w-2xl text-white/90">
             Todo lo relacionado en calzado para damas, caballeros y niños
           </p>
-          <a href="/product">
-            <button className="mt-4 bg-[#c1d8f0] text-black px-10 py-3 rounded-full font-semibold shadow hover:shadow-lg hover:scale-[1.03] transition">
-              Ver productos
-            </button>
-          </a>
 
+          <div className="flex flex-col sm:flex-row gap-4 mt-4">
+            <a href="/product">
+              <button className="bg-[#c1d8f0] text-black px-10 py-3 rounded-full font-semibold shadow hover:shadow-lg hover:scale-[1.03] transition">
+                Ver productos
+              </button>
+            </a>
+
+            <a href="/suggestor">
+              <button className="bg-black text-white px-10 py-3 rounded-full font-semibold shadow hover:shadow-lg hover:scale-[1.03] transition">
+                Encontrar mi calzado ideal
+              </button>
+            </a>
+          </div>
         </div>
       </section>
 
       {/* Productos nuevos */}
       <section className="py-16" style={{ backgroundColor: '#c1d8f0' }}>
         <div className="max-w-7xl mx-auto px-6">
-          <h2 className="text-3xl font-bold mb-8 text-slate-900">Productos nuevos</h2>
+          <h2 className="text-3xl font-bold mb-8 text-slate-900">
+            Productos nuevos
+          </h2>
           <ProductSlider />
         </div>
       </section>
@@ -52,7 +65,9 @@ export default function Home() {
       {/* Categorías */}
       <section className="bg-white py-16">
         <div className="max-w-7xl mx-auto px-6">
-          <h2 className="text-3xl font-bold mb-8 text-slate-900">Categorías</h2>
+          <h2 className="text-3xl font-bold mb-8 text-slate-900">
+            Categorías
+          </h2>
           <Categories />
         </div>
       </section>
@@ -60,7 +75,9 @@ export default function Home() {
       {/* Sobre nosotros */}
       <section className="py-20" style={{ backgroundColor: '#c1d8f0' }}>
         <div className="max-w-4xl mx-auto px-6">
-          <h2 className="text-3xl font-bold mb-6 text-slate-900">Sobre nosotros</h2>
+          <h2 className="text-3xl font-bold mb-6 text-slate-900">
+            Sobre nosotros
+          </h2>
           <p className="text-slate-700 leading-relaxed text-lg">
             En CalzaOma nacimos con una idea clara: ofrecer calzado de alta calidad
             para toda la familia, combinando comodidad, diseño y precios justos.

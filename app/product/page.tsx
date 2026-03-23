@@ -19,7 +19,7 @@ const mockProducts: Product[] = [
     slug: 'new-balance-530',
     name: 'New Balance 530',
     price: '$120.000',
-    image: '/shoes/Balance-530.png',
+    image: '/shoes/balance-530.png',
     category: 'Tenis deportivos',
   },
   {
@@ -35,7 +35,7 @@ const mockProducts: Product[] = [
     slug: 'puma-faster',
     name: 'Puma Faster',
     price: '$110.000',
-    image: '/shoes/Puma-faster.png',
+    image: '/shoes/puma-faster.png',
     category: 'Sandalias deportivas',
   },
   {
@@ -43,7 +43,7 @@ const mockProducts: Product[] = [
     slug: 'puma-omnia',
     name: 'Puma Omnia',
     price: '$130.000',
-    image: '/shoes/Puma-omnia.png',
+    image: '/shoes/puma-omnia.png',
     category: 'Tenis urbanos',
   },
 ]

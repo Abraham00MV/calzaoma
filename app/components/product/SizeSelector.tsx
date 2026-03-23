@@ -30,7 +30,7 @@ export default function SizeSelector({
                 w-12 h-12 rounded-lg border font-medium transition-all
                 ${isActive
                   ? 'bg-[#c1d8f0] border-black text-black scale-105 shadow-md'
-                  : 'bg-white border-gray-300 hover:border-black hover:shadow-sm'
+                  : 'bg-white text-black hover:border-black hover:shadow-sm'
                 }
               `}
             >
