@@ -7,30 +7,27 @@ import Image from 'next/image'
 export default function Recomendador() {
   const router = useRouter()
 
-  const [footLength, setFootLength] = useState('')
+  const [footSize, setFootSize] = useState('')
   const [useType, setUseType] = useState('')
   const [comfort, setComfort] = useState('')
 
+  const sizes = Array.from({ length: 21 }, (_, i) => 35 + i)
+
   const handleSubmit = () => {
-    if (!footLength || !useType || !comfort) {
+    if (!footSize || !useType || !comfort) {
       alert('Completa todos los campos')
       return
     }
 
-    if (Number(footLength) < 20 || Number(footLength) > 35) {
-      alert('Medida inválida')
-      return
-    }
-
     router.push(
-      `/Recommended?foot=${footLength}&use=${useType}&comfort=${comfort}`
+      `/Recommended?foot=${footSize}&use=${useType}&comfort=${comfort}`
     )
   }
 
   return (
     <section className="relative min-h-screen overflow-hidden bg-white">
 
-      {/* 🔥 CURVED IMAGE */}
+      {/*  CURVED IMAGE */}
       <div className="absolute inset-0 hidden md:block">
         <div
           className="absolute right-0 top-0 h-full w-[60%]"
@@ -50,10 +47,9 @@ export default function Recomendador() {
         </div>
       </div>
 
-      {/* 🔹 FORM AREA */}
+      {/* 🔹 FORM */}
       <div className="relative z-10 flex min-h-screen items-center justify-center px-6">
 
-        {/* limitamos el ancho del lado izquierdo */}
         <div className="w-full md:w-[50%] flex justify-center">
 
           <div className="w-full max-w-lg bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 space-y-6 border border-white/40">
@@ -66,13 +62,21 @@ export default function Recomendador() {
               Completa los datos y te recomendaremos el mejor calzado para ti
             </p>
 
-            <input
+            {/*  TALLA (DROPDOWN) */}
+            <select
               className="w-full border text-black rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black"
-              placeholder="Medida del pie (cm)"
-              value={footLength}
-              onChange={(e) => setFootLength(e.target.value)}
-            />
+              value={footSize}
+              onChange={(e) => setFootSize(e.target.value)}
+            >
+              <option value="">Selecciona tu talla</option>
+              {sizes.map((size) => (
+                <option key={size} value={size}>
+                  {size}
+                </option>
+              ))}
+            </select>
 
+            {/*  USO */}
             <select
               className="w-full border text-black rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black"
               value={useType}
@@ -81,8 +85,12 @@ export default function Recomendador() {
               <option value="">¿Para qué lo necesitas?</option>
               <option value="trabajo">Trabajo</option>
               <option value="deporte">Deporte</option>
+              <option value="estilo">
+                Quiero el mejor estilo en mis pies
+              </option>
             </select>
 
+            {/*  COMFORT LEVEL */}
             <select
               className="w-full border text-black rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black"
               value={comfort}
@@ -91,6 +99,9 @@ export default function Recomendador() {
               <option value="">Nivel de comodidad</option>
               <option value="media">Media</option>
               <option value="alta">Alta</option>
+              <option value="maximo-comfort">
+                Máximo comfort
+              </option>
             </select>
 
             <button

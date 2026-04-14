@@ -30,16 +30,12 @@ export function WhatsAppButton() {
           }`}
         >
           <span className="text-sm font-medium">Contáctanos directamente</span>
-          {/* Flecha del tooltip */}
           <div className="absolute top-1/2 -right-2 -translate-y-1/2 w-0 h-0 border-t-8 border-t-transparent border-b-8 border-b-transparent border-l-8 border-l-gray-900" />
         </div>
 
-        {/* Botón de WhatsApp */}
         <div className="relative">
-          {/* Anillo de pulso animado */}
           <div className="absolute inset-0 bg-[#25D366] rounded-full animate-ping opacity-75" />
           
-          {/* Botón principal con logo real de WhatsApp */}
           <div className="relative bg-[#25D366] hover:bg-[#128C7E] text-white w-16 h-16 rounded-full shadow-lg hover:shadow-2xl flex items-center justify-center transition-all duration-300 transform hover:scale-110">
             <svg 
               viewBox="0 0 32 32" 
