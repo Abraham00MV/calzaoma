@@ -1,10 +1,11 @@
 'use client'
 
 import Image from 'next/image'
-import { ShoppingBag, ChevronDown } from 'lucide-react'
+import { ShoppingBag, ChevronDown, User } from 'lucide-react'
 import { useCartStore } from '@/app/store/cartStore'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { createClient } from '@/app/lib/supabase/client'
 
 export default function Navbar() {
   const router = useRouter()
@@ -12,9 +13,45 @@ export default function Navbar() {
 
   const [mounted, setMounted] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [userName, setUserName] = useState('')
+
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const supabase = createClient()
 
   useEffect(() => {
-    setMounted(true)
+    const getSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
+      setIsAuthenticated(!!session)
+
+      if (session?.user) {
+        setUserName(
+          session.user.user_metadata?.full_name || 'Mi cuenta'
+        )
+      }
+    }
+
+    getSession()
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(!!session)
+
+      if (session?.user) {
+        setUserName(
+          session.user.user_metadata?.full_name || 'Mi cuenta'
+        )
+      } else {
+        setUserName('')
+      }
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
   }, [])
 
   const totalItems = mounted ? getTotalItems() : 0
@@ -125,9 +162,25 @@ export default function Navbar() {
             )}
           </button>
 
-          <button className="bg-[#c1d8f0] text-black px-5 py-2.5 rounded-full text-sm font-medium hover:opacity-90 transition">
-            Iniciar sesión
-          </button>
+
+          {isAuthenticated ? (
+            <button
+              onClick={() => router.push('/account')}
+              className="flex items-center gap-2 text-gray-700 hover:text-black transition"
+            >
+              <User size={22} />
+              <span className="max-w-[120px] truncate">
+                {userName}
+              </span>
+            </button>
+          ) : (
+            <button
+              onClick={() => router.push('/login')}
+              className="bg-[#c1d8f0] text-black px-5 py-2.5 rounded-full text-sm font-medium hover:opacity-90 transition"
+            >
+              Iniciar sesión
+            </button>
+          )}
 
         </div>
       </div>

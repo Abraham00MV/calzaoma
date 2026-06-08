@@ -75,7 +75,6 @@ function ProductList() {
   const [selectedSizes, setSelectedSizes] = useState<number[]>([])
   const [maxPrice, setMaxPrice] = useState<number>(200000)
 
-  // 🔥 SYNC URL → STATE
   useEffect(() => {
     if (categoryFromUrl) {
       const formatted =
@@ -119,7 +118,6 @@ function ProductList() {
       ? 'Nuestros productos'
       : selectedCategory
 
-  // 🔥 OPTIONAL: update URL when clicking filters
   const handleCategoryChange = (cat: string) => {
     setSelectedCategory(cat)
 

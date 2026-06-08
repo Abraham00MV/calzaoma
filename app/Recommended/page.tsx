@@ -20,7 +20,6 @@ export default function RecommendedPage() {
     comfortLevel
   )
 
-  // 🔥 COPY 100% EN ESPAÑOL (NATURAL / ECOMMERCE)
   const descriptionText = `Estas recomendaciones están personalizadas según la medida de tu pie (${footLength} cm), el uso que le darás (${useType}) y el nivel de comodidad que prefieres (${comfortLevel}).`
 
   return (

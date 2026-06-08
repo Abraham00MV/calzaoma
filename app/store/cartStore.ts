@@ -17,7 +17,6 @@ interface CartState {
   isOpen: boolean
   isCheckoutOpen: boolean
 
-  // 🔥 HYDRATION STATE
   hasHydrated: boolean
   setHasHydrated: (state: boolean) => void
 
@@ -48,7 +47,6 @@ export const useCartStore = create<CartState>()(
       isOpen: false,
       isCheckoutOpen: false,
 
-      // 🔥 hydration default
       hasHydrated: false,
       setHasHydrated: (state) => set({ hasHydrated: state }),
 
@@ -124,7 +122,6 @@ export const useCartStore = create<CartState>()(
     {
       name: 'cart-storage',
 
-      // 🔥 CLAVE DEL FIX
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true)
       },
