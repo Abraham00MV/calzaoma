@@ -23,25 +23,59 @@ export default function LoginPage() {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
 
+const handleLogin = async () => {
+  setLoading(true)
+  setError('')
 
-    const handleLogin = async () => {
-        setLoading(true)
-        setError('')
+  const { error: loginError } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  })
+
+  if (loginError) {
+    console.error('LOGIN ERROR', loginError)
+    setError(loginError.message)
+    setLoading(false)
+    return
+  }
+
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser()
 
 
-        const { error } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-        })
+  if (!user) {
+    setError('No se pudo obtener el usuario autenticado.')
+    setLoading(false)
+    return
+  }
 
-        if (error) {
-            setError(error.message)
-            setLoading(false)
-            return
-        }
+  const { data: profiles, error: profileError } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', user.id)
 
-        router.push('/account')
-    }
+  if (profileError) {
+    setError(profileError.message)
+    setLoading(false)
+    return
+  }
+
+  if (!profiles || profiles.length === 0) {
+    setError('No existe perfil para este usuario.')
+    setLoading(false)
+    return
+  }
+
+  const profile = profiles[0]
+
+  if (profile.role === 'admin') {
+    router.push('/admin')
+  } else {
+    router.push('/account')
+  }
+}
 
     const handleSignup = async () => {
         setLoading(true)

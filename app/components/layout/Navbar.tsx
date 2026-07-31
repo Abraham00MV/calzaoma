@@ -1,7 +1,12 @@
 'use client'
 
 import Image from 'next/image'
-import { ShoppingBag, ChevronDown, User } from 'lucide-react'
+import {
+  ShoppingBag,
+  ChevronDown,
+  User,
+  LogOut,
+} from 'lucide-react'
 import { useCartStore } from '@/app/store/cartStore'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -16,42 +21,66 @@ export default function Navbar() {
   const [userName, setUserName] = useState('')
 
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
+
   const supabase = createClient()
 
   useEffect(() => {
-    const getSession = async () => {
+    setMounted(true)
+
+    const loadSession = async () => {
       const {
         data: { session },
       } = await supabase.auth.getSession()
 
       setIsAuthenticated(!!session)
 
-      if (session?.user) {
-        setUserName(
-          session.user.user_metadata?.full_name || 'Mi cuenta'
-        )
+      if (!session?.user) {
+        setUserName('')
+        setIsAdmin(false)
+        return
       }
+
+      setUserName(
+        session.user.user_metadata?.full_name || 'Mi cuenta'
+      )
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', session.user.id)
+        .single()
+
+      setIsAdmin(profile?.role === 'admin')
     }
 
-    getSession()
+    loadSession()
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setIsAuthenticated(!!session)
 
-      if (session?.user) {
-        setUserName(
-          session.user.user_metadata?.full_name || 'Mi cuenta'
-        )
-      } else {
+      if (!session?.user) {
         setUserName('')
+        setIsAdmin(false)
+        return
       }
+
+      setUserName(
+        session.user.user_metadata?.full_name || 'Mi cuenta'
+      )
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', session.user.id)
+        .single()
+
+      setIsAdmin(profile?.role === 'admin')
     })
 
-    return () => {
-      subscription.unsubscribe()
-    }
+    return () => subscription.unsubscribe()
   }, [])
 
   const totalItems = mounted ? getTotalItems() : 0
@@ -67,16 +96,21 @@ export default function Navbar() {
     router.push(`/product?category=${value}`)
   }
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    router.push('/login')
+  }
+
   return (
     <header className="sticky top-0 z-50 w-full bg-[#f8fafc] border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-6 py-[17px] flex items-center justify-between">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-[17px]">
 
         {/* LOGO */}
         <div
-          className="flex items-center gap-3 cursor-pointer"
-          onClick={() => router.push('/')}
+          className="flex cursor-pointer items-center gap-3"
+          onClick={() => router.push(isAdmin ? '/admin' : '/')}
         >
-          <div className="relative w-10 h-10 rounded-xl overflow-hidden">
+          <div className="relative h-10 w-10 overflow-hidden rounded-xl">
             <Image
               src="/logos/Oma-logo-rise.webp"
               alt="CalzaOma"
@@ -84,99 +118,113 @@ export default function Navbar() {
               className="object-contain"
             />
           </div>
+
           <span className="text-lg font-semibold text-black">
             CalzaOma
           </span>
         </div>
 
-        {/* NAV */}
-        <nav className="hidden md:flex items-center gap-10 text-sm font-medium text-gray-600">
-
-          <button
-            onClick={() => router.push('/')}
-            className="hover:text-black transition"
-          >
-            Inicio
-          </button>
-
-          <button
-            onClick={() => router.push('/product')}
-            className="hover:text-black transition"
-          >
-            Productos
-          </button>
-
-          {/* DROPDOWN SAFE */}
-          <div className="relative">
+        {/* NAV CLIENTE */}
+        {!isAdmin && (
+          <nav className="hidden items-center gap-10 text-sm font-medium text-gray-600 md:flex">
 
             <button
-              onClick={() => setDropdownOpen((prev) => !prev)}
-              className="flex items-center gap-1 hover:text-black transition"
+              onClick={() => router.push('/')}
+              className="transition hover:text-black"
             >
-              Categorías
-              <ChevronDown size={16} />
+              Inicio
             </button>
 
-            {/* dropdown */}
-            {dropdownOpen && (
-              <>
-                {/* SAFE BACKDROP (no full screen blocking layout issues) */}
-                <div
-                  className="fixed inset-0 z-10"
-                  onClick={() => setDropdownOpen(false)}
-                />
+            <button
+              onClick={() => router.push('/product')}
+              className="transition hover:text-black"
+            >
+              Productos
+            </button>
 
-                {/* MENU */}
-                <div className="absolute left-0 mt-3 w-56 bg-white border border-gray-100 rounded-2xl shadow-xl z-20 overflow-hidden">
+            <div className="relative">
 
-                  {categories.map((cat) => (
-                    <button
-                      key={cat.value}
-                      onClick={() => handleCategory(cat.value)}
-                      className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-black transition"
-                    >
-                      {cat.label}
-                    </button>
-                  ))}
+              <button
+                onClick={() => setDropdownOpen((prev) => !prev)}
+                className="flex items-center gap-1 transition hover:text-black"
+              >
+                Categorías
+                <ChevronDown size={16} />
+              </button>
 
-                </div>
-              </>
-            )}
+              {dropdownOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-10"
+                    onClick={() => setDropdownOpen(false)}
+                  />
 
-          </div>
-        </nav>
+                  <div className="absolute left-0 z-20 mt-3 w-56 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl">
+
+                    {categories.map((cat) => (
+                      <button
+                        key={cat.value}
+                        onClick={() => handleCategory(cat.value)}
+                        className="w-full px-4 py-3 text-left text-sm text-gray-700 transition hover:bg-gray-50 hover:text-black"
+                      >
+                        {cat.label}
+                      </button>
+                    ))}
+
+                  </div>
+                </>
+              )}
+
+            </div>
+
+          </nav>
+        )}
 
         {/* RIGHT */}
-        <div className="flex items-center gap-5">
+        <div className="flex items-center gap-4">
 
-          <button
-            onClick={openCart}
-            className="relative text-gray-700 hover:text-black transition"
-          >
-            <ShoppingBag size={22} />
+          {!isAdmin && (
+            <button
+              onClick={openCart}
+              className="relative text-gray-700 transition hover:text-black"
+            >
+              <ShoppingBag size={22} />
 
-            {mounted && totalItems > 0 && (
-              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full">
-                {totalItems}
-              </span>
-            )}
-          </button>
-
+              {mounted && totalItems > 0 && (
+                <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                  {totalItems}
+                </span>
+              )}
+            </button>
+          )}
 
           {isAuthenticated ? (
-            <button
-              onClick={() => router.push('/account')}
-              className="flex items-center gap-2 text-gray-700 hover:text-black transition"
-            >
-              <User size={22} />
-              <span className="max-w-[120px] truncate">
-                {userName}
-              </span>
-            </button>
+            <>
+              <button
+                onClick={() =>
+                  router.push(isAdmin ? '/admin' : '/account')
+                }
+                className="flex items-center gap-2 text-gray-700 transition hover:text-black"
+              >
+                <User size={22} />
+
+                <span className="max-w-[120px] truncate">
+                  {isAdmin ? 'Panel Admin' : userName}
+                </span>
+              </button>
+
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 rounded-full border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100"
+              >
+                <LogOut size={16} />
+                Cerrar sesión
+              </button>
+            </>
           ) : (
             <button
               onClick={() => router.push('/login')}
-              className="bg-[#c1d8f0] text-black px-5 py-2.5 rounded-full text-sm font-medium hover:opacity-90 transition"
+              className="rounded-full bg-[#c1d8f0] px-5 py-2.5 text-sm font-medium text-black transition hover:opacity-90"
             >
               Iniciar sesión
             </button>
