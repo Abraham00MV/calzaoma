@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { Pencil } from 'lucide-react'
+import { Pencil, Power } from 'lucide-react'
 
 type Product = {
   id: string
@@ -20,10 +20,12 @@ type Product = {
 
 interface ProductTableProps {
   products: Product[]
+  onToggleActive?: (productId: string, newActive: boolean) => void
 }
 
 export default function ProductTable({
   products,
+  onToggleActive,
 }: ProductTableProps) {
   const router = useRouter()
 
@@ -53,6 +55,10 @@ export default function ProductTable({
             </th>
 
             <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700">
+              Estado
+            </th>
+
+            <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700">
               Acción
             </th>
           </tr>
@@ -62,7 +68,7 @@ export default function ProductTable({
           {products.length === 0 ? (
             <tr>
               <td
-                colSpan={6}
+                colSpan={7}
                 className="py-16 text-center text-gray-500"
               >
                 Aún no hay productos registrados.
@@ -102,6 +108,20 @@ export default function ProductTable({
 
                 <td className="px-6 py-4">
                   {product.stock}
+                </td>
+
+                <td className="px-6 py-4 text-center">
+                  <button
+                    onClick={() => onToggleActive?.(product.id, !product.active)}
+                    className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition ${
+                      product.active
+                        ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                        : 'bg-red-100 text-red-700 hover:bg-red-200'
+                    }`}
+                  >
+                    <Power size={12} />
+                    {product.active ? 'Activo' : 'Inactivo'}
+                  </button>
                 </td>
 
                 <td className="px-6 py-4 text-center">

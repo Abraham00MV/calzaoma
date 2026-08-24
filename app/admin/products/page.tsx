@@ -48,6 +48,22 @@ export default function AdminProductsPage() {
     loadProducts()
   }, [])
 
+  const handleToggleActive = async (productId: string, newActive: boolean) => {
+    const { error } = await supabase
+      .from('products')
+      .update({ active: newActive })
+      .eq('id', productId)
+
+    if (error) {
+      console.error('Error toggling product active:', error)
+      return
+    }
+
+    setProducts(prev =>
+      prev.map(p => (p.id === productId ? { ...p, active: newActive } : p))
+    )
+  }
+
   return (
     <main className="min-h-[85vh] bg-gray-50 p-8">
       <div className="max-w-7xl mx-auto">
@@ -79,7 +95,7 @@ export default function AdminProductsPage() {
             Cargando productos...
           </div>
         ) : (
-          <ProductTable products={products} />
+          <ProductTable products={products} onToggleActive={handleToggleActive} />
         )}
 
       </div>
