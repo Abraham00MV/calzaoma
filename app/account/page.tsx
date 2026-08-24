@@ -285,12 +285,16 @@ export default function AccountPage() {
                 </h2>
 
                 <div className="flex flex-col items-center justify-center text-center py-16">
-                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                    <Package size={28} className="text-gray-400" />
+                  <div className="w-20 h-20 bg-gradient-to-br from-[#c1d8f0] to-[#e8f0fe] rounded-full flex items-center justify-center mb-5">
+                    <Package size={32} className="text-slate-600" />
                   </div>
 
-                  <p className="text-gray-500 mb-6">
-                    Esta función estará disponible próximamente.
+                  <h3 className="text-lg font-semibold text-slate-800 mb-2">
+                    Historial de órdenes
+                  </h3>
+
+                  <p className="text-gray-500 max-w-sm">
+                    Estamos trabajando en esta función. Pronto podrás ver el estado de tus pedidos aquí.
                   </p>
                 </div>
               </>
