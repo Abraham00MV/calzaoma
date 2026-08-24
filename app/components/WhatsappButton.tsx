@@ -5,8 +5,7 @@ import { useState } from 'react'
 export function WhatsAppButton() {
   const [isHovered, setIsHovered] = useState(false)
   
-  // Número de WhatsApp del negocio (reemplaza con el número real)
-  const phoneNumber = '5215512345678' // Formato: código país + número sin espacios ni guiones
+  const phoneNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER
   const message = encodeURIComponent('¡Hola! Me interesa conocer más sobre sus productos de CalzaOma')
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`
 
