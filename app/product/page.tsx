@@ -7,6 +7,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { FaShoePrints } from 'react-icons/fa'
 import { useProducts, formatPrice, PublicProduct } from '@/app/lib/products'
 import { ProductBreadcrumb } from '@/app/components/product/ProductBreadcrumb'
+import FavoriteButton from '@/app/components/product/FavoriteButton'
 
 const sizes = Array.from({ length: 10 }, (_, i) => 35 + i)
 
@@ -221,6 +222,9 @@ function ProductList() {
                           className="object-contain"
                           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                         />
+                      </div>
+                      <div className="absolute top-3 right-3 z-10">
+                        <FavoriteButton productId={product.id} />
                       </div>
                     </div>
 

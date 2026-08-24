@@ -12,6 +12,7 @@ import {
   ProductBreadcrumb,
   slugify,
 } from '@/app/components/product/ProductBreadcrumb'
+import FavoriteButton from '@/app/components/product/FavoriteButton'
 
 export default function ProductPage() {
   const params = useParams()
@@ -183,12 +184,15 @@ export default function ProductPage() {
           </div>
 
           {/* ADD TO CART */}
-          <button
-            onClick={handleAddToCart}
-            className="mt-4 bg-[#c1d8f0] text-black px-10 py-3 rounded-full font-semibold shadow hover:shadow-lg hover:scale-[1.03] transition"
-          >
-            Agregar al carrito
-          </button>
+          <div className="mt-4 flex items-center gap-4">
+            <button
+              onClick={handleAddToCart}
+              className="bg-[#c1d8f0] text-black px-10 py-3 rounded-full font-semibold shadow hover:shadow-lg hover:scale-[1.03] transition"
+            >
+              Agregar al carrito
+            </button>
+            <FavoriteButton productId={product.id} size={24} />
+          </div>
 
         </div>
 

@@ -1,8 +1,14 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
+import Link from 'next/link'
+import { Heart, Package, Trash2 } from 'lucide-react'
 import { createClient } from '../lib/supabase/client'
+import { useFavoritesStore } from '../store/favoritesStore'
+import { mapDbProduct, formatPrice, PublicProduct } from '../lib/products'
+import FavoriteButton from '../components/product/FavoriteButton'
 
 type Tab = 'profile' | 'favorites' | 'orders'
 
@@ -16,7 +22,28 @@ export default function AccountPage() {
   const [userData, setUserData] = useState({
     email: '',
     fullName: '',
+    userId: '',
   })
+
+  const [favoriteProducts, setFavoriteProducts] = useState<PublicProduct[]>([])
+  const [favoritesLoading, setFavoritesLoading] = useState(true)
+
+  const { favoriteIds, loadFavorites } = useFavoritesStore()
+
+  const loadFavoritesList = useCallback(async (userId: string) => {
+    setFavoritesLoading(true)
+    const { data } = await supabase
+      .from('favorites')
+      .select('product_id, products(*)')
+      .eq('user_id', userId)
+
+    const favs = (data ?? [])
+      .map((row: any) => (row.products ? mapDbProduct(row.products) : null))
+      .filter(Boolean) as PublicProduct[]
+
+    setFavoriteProducts(favs)
+    setFavoritesLoading(false)
+  }, [supabase])
 
   useEffect(() => {
     const loadUser = async () => {
@@ -35,13 +62,23 @@ export default function AccountPage() {
           user.user_metadata?.full_name ||
           user.user_metadata?.name ||
           '',
+        userId: user.id,
       })
 
       setLoading(false)
+      await loadFavoritesList(user.id)
     }
 
     loadUser()
-  }, [router, supabase])
+  }, [router, supabase, loadFavoritesList])
+
+  useEffect(() => {
+    loadFavorites()
+  }, [])
+
+  const displayedFavorites = favoriteIds.length > 0
+    ? favoriteProducts.filter((p) => favoriteIds.includes(p.id))
+    : favoriteProducts
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -177,30 +214,65 @@ export default function AccountPage() {
                   Productos favoritos
                 </h2>
 
-                <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
-
-                  {[
-                    'Sandalia Verona',
-                    'Tenis Urban',
-                    'Zapato Elegance',
-                  ].map((product) => (
-                    <div
-                      key={product}
-                      className="border rounded-2xl p-5"
-                    >
-                      <div className="h-40 bg-gray-100 rounded-xl mb-4" />
-
-                      <h3 className="font-semibold text-black">
-                        {product}
-                      </h3>
-
-                      <p className="text-sm text-gray-500 mt-1">
-                        Producto guardado como favorito.
-                      </p>
+                {favoritesLoading ? (
+                  <p className="text-gray-500 text-center py-16">
+                    Cargando favoritos...
+                  </p>
+                ) : displayedFavorites.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center text-center py-16">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                      <Heart size={28} className="text-gray-400" />
                     </div>
-                  ))}
 
-                </div>
+                    <p className="text-gray-500 mb-6">
+                      Aún no tienes productos favoritos.
+                    </p>
+
+                    <button
+                      onClick={() => router.push('/product')}
+                      className="bg-[#c1d8f0] text-black px-6 py-3 rounded-xl font-medium hover:opacity-90 transition"
+                    >
+                      Explorar productos
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    {displayedFavorites.map((product) => (
+                      <Link
+                        href={`/product/${product.slug}`}
+                        key={product.id}
+                      >
+                        <article className="rounded-2xl shadow-md hover:shadow-xl transition overflow-hidden bg-white relative">
+                          <div className="absolute top-3 right-3 z-10">
+                            <FavoriteButton productId={product.id} />
+                          </div>
+
+                          <div className="h-48 flex items-center justify-center p-4 relative bg-white">
+                            <Image
+                              src={product.image}
+                              alt={product.name}
+                              fill
+                              className="object-contain"
+                              sizes="(max-width: 640px) 100vw, 50vw"
+                            />
+                          </div>
+
+                          <div className="p-4">
+                            <span className="text-xs text-slate-500">
+                              {product.category}
+                            </span>
+                            <h3 className="font-semibold text-lg">
+                              {product.name}
+                            </h3>
+                            <span className="text-emerald-700 font-bold text-xl">
+                              {formatPrice(product.price)}
+                            </span>
+                          </div>
+                        </article>
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </>
             )}
 
@@ -212,45 +284,21 @@ export default function AccountPage() {
                   Historial de órdenes
                 </h2>
 
-                <div className="space-y-4">
+                <div className="flex flex-col items-center justify-center text-center py-16">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <Package size={28} className="text-gray-400" />
+                  </div>
 
-                  {[
-                    {
-                      id: '#OMA-1001',
-                      total: '$210.000',
-                      status: 'Entregado',
-                    },
-                    {
-                      id: '#OMA-1002',
-                      total: '$180.000',
-                      status: 'En proceso',
-                    },
-                    {
-                      id: '#OMA-1003',
-                      total: '$120.000',
-                      status: 'Entregado',
-                    },
-                  ].map((order) => (
-                    <div
-                      key={order.id}
-                      className="border rounded-2xl p-5 flex items-center justify-between"
-                    >
-                      <div>
-                        <p className="font-semibold">
-                          {order.id}
-                        </p>
+                  <p className="text-gray-500 mb-6">
+                    Aún no tienes órdenes. Cuando realices un pedido, aparecerá aquí.
+                  </p>
 
-                        <p className="text-sm text-gray-500">
-                          Total: {order.total}
-                        </p>
-                      </div>
-
-                      <span className="px-4 py-2 rounded-full bg-[#c1d8f0] text-sm font-medium">
-                        {order.status}
-                      </span>
-                    </div>
-                  ))}
-
+                  <button
+                    onClick={() => router.push('/product')}
+                    className="bg-[#c1d8f0] text-black px-6 py-3 rounded-xl font-medium hover:opacity-90 transition"
+                  >
+                    Explorar productos
+                  </button>
                 </div>
               </>
             )}
