@@ -13,6 +13,9 @@ type Product = {
   price: number
   stock: number
   image_url: string | null
+  use_type: string | null
+  comfort_score: number | null
+  sizes: number[]
 }
 
 export default function EditProductPage() {
@@ -27,9 +30,7 @@ export default function EditProductPage() {
     const loadProduct = async () => {
       const { data, error } = await supabase
         .from('products')
-        .select(
-          'id, name, description, category, price, stock, image_url'
-        )
+        .select('*')
         .eq('id', params.id)
         .single()
 
@@ -54,6 +55,9 @@ export default function EditProductPage() {
     price: number
     stock: number
     image: File | null
+    useType: string
+    comfortScore: number
+    sizes: number[]
   }) => {
     try {
       let imageUrl = product?.image_url ?? null
@@ -96,6 +100,9 @@ export default function EditProductPage() {
           price: updatedProduct.price,
           stock: updatedProduct.stock,
           image_url: imageUrl,
+          sizes: updatedProduct.sizes,
+          use_type: updatedProduct.useType,
+          comfort_score: updatedProduct.comfortScore,
         })
         .eq('id', params.id)
 
@@ -144,6 +151,9 @@ export default function EditProductPage() {
             image:
               product.image_url ??
               '/products/product-placeholder.png',
+            useType: product.use_type ?? 'trabajo',
+            comfortScore: product.comfort_score ?? 5,
+            sizes: product.sizes ?? [],
           }}
           onSubmit={handleUpdate}
         />

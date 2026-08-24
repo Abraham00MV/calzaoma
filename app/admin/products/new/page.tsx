@@ -16,6 +16,9 @@ export default function NewProductPage() {
     price: number
     stock: number
     image: File | null
+    useType: string
+    comfortScore: number
+    sizes: number[]
   }) => {
     try {
       let imageUrl: string | null = null
@@ -74,7 +77,9 @@ export default function NewProductPage() {
           price: product.price,
           stock: product.stock,
           image_url: imageUrl,
-          sizes: [],
+          sizes: product.sizes,
+          use_type: product.useType,
+          comfort_score: product.comfortScore,
           featured: false,
           active: true,
         })

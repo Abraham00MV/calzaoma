@@ -1,27 +1,29 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Image from 'next/image'
 import { useCartStore } from '@/app/store/cartStore'
 import SizeSelector from '@/app/components/product/SizeSelector'
 import QuantitySelector from '@/app/components/cart/QuantitySelector'
-import { products } from '@/app/data/products'
+import { useProducts, formatPrice } from '@/app/lib/products'
 import { FiAlertCircle } from 'react-icons/fi'
+import {
+  ProductBreadcrumb,
+  slugify,
+} from '@/app/components/product/ProductBreadcrumb'
 
 export default function ProductPage() {
   const params = useParams()
   const slug = params.slug as string
 
+  const { products, loading } = useProducts()
   const addToCart = useCartStore((state) => state.addToCart)
 
-  const product = products.find((p) => p.slug === slug)
-
-  if (!product) {
-    return <p className="p-10">Producto no encontrado</p>
-  }
-
-  const images = [product.image, product.image, product.image]
+  const product = useMemo(
+    () => products.find((p) => p.slug === slug),
+    [products, slug]
+  )
 
   const [selectedImage, setSelectedImage] = useState(0)
   const [size, setSize] = useState<number | null>(null)
@@ -31,6 +33,27 @@ export default function ProductPage() {
     size?: string
     quantity?: string
   }>({})
+
+  if (loading) {
+    return (
+      <section className="min-h-screen bg-white flex items-center justify-center">
+        <p className="text-gray-500">Cargando producto...</p>
+      </section>
+    )
+  }
+
+  if (!product) {
+    return <p className="p-10">Producto no encontrado</p>
+  }
+
+  const images = [product.image, product.image, product.image]
+  const availableSizes =
+    product.sizes.length > 0
+      ? product.sizes
+      : Array.from(
+          { length: product.maxSize - product.minSize + 1 },
+          (_, i) => product.minSize + i
+        )
 
   const handleAddToCart = () => {
     const newErrors: typeof errors = {}
@@ -48,18 +71,30 @@ export default function ProductPage() {
     if (Object.keys(newErrors).length > 0) return
 
     addToCart({
-      id: String(product.id),
+      id: product.id,
       name: product.name,
       price: product.price,
       image: product.image,
       size: size as number,
       quantity,
     })
-
   }
 
   return (
     <section className="min-h-screen bg-white py-16">
+
+      <div className="max-w-7xl mx-auto px-6">
+        <ProductBreadcrumb
+          crumbs={[
+            { label: 'Productos', href: '/product' },
+            {
+              label: product.category,
+              href: `/product?category=${slugify(product.category)}`,
+            },
+            { label: product.name },
+          ]}
+        />
+      </div>
 
       <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-16">
 
@@ -104,16 +139,21 @@ export default function ProductPage() {
           </h1>
 
           <p className="text-2xl font-bold text-slate-800">
-            ${product.price.toLocaleString('es-CO')}
+            {formatPrice(product.price)}
           </p>
 
           <p className="text-slate-700 leading-relaxed">
-            Producto ideal para {product.useType}, con nivel de comodidad {product.comfortScore}/10.
+            {product.description ||
+              `Producto ideal para ${product.useType}, con nivel de comodidad ${product.comfortScore}/10.`}
           </p>
 
           {/* SIZE */}
           <div>
-            <SizeSelector selected={size} onSelect={setSize} />
+            <SizeSelector
+              selected={size}
+              onSelect={setSize}
+              sizes={availableSizes}
+            />
 
             {errors.size && (
               <div className="flex items-center gap-2 mt-2 text-red-600 text-sm">

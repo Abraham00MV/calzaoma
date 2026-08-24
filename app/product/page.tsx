@@ -2,95 +2,43 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useMemo, useState, useEffect } from 'react'
+import { Suspense, useMemo, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { FaShoePrints } from 'react-icons/fa'
-
-type Product = {
-  id: number
-  slug: string
-  name: string
-  price: string
-  image: string
-  category: string
-}
-
-const mockProducts: Product[] = [
-  {
-    id: 1,
-    slug: 'new-balance-530',
-    name: 'New Balance 530',
-    price: '$120.000',
-    image: '/shoes/balance-530.png',
-    category: 'Tenis deportivos',
-  },
-  {
-    id: 2,
-    slug: 'nike-zoom',
-    name: 'Nike Zoom',
-    price: '$150.000',
-    image: '/shoes/nike-zoom.png',
-    category: 'Tenis deportivos',
-  },
-  {
-    id: 3,
-    slug: 'puma-faster',
-    name: 'Puma Faster',
-    price: '$110.000',
-    image: '/shoes/puma-faster.png',
-    category: 'Sandalias',
-  },
-  {
-    id: 4,
-    slug: 'puma-omnia',
-    name: 'Puma Omnia',
-    price: '$130.000',
-    image: '/shoes/puma-omnia.png',
-    category: 'Zapatos dama',
-  },
-]
-
-const categories = [
-  'Todos',
-  'Sandalias',
-  'Zapatos dama',
-  'Tenis deportivos',
-]
+import { useProducts, formatPrice, PublicProduct } from '@/app/lib/products'
+import { ProductBreadcrumb } from '@/app/components/product/ProductBreadcrumb'
 
 const sizes = Array.from({ length: 10 }, (_, i) => 35 + i)
-
-function parsePrice(price: string) {
-  return Number(price.replace(/[$.]/g, ''))
-}
 
 function ProductList() {
   const searchParams = useSearchParams()
   const router = useRouter()
 
+  const { products, loading } = useProducts()
+
   const categoryFromUrl = searchParams.get('category')
 
-  const [hoveredId, setHoveredId] = useState<number | null>(null)
+  const [hoveredId, setHoveredId] = useState<string | null>(null)
 
-  const [selectedCategory, setSelectedCategory] = useState('Todos')
   const [selectedSizes, setSelectedSizes] = useState<number[]>([])
   const [maxPrice, setMaxPrice] = useState<number>(200000)
 
-  useEffect(() => {
-    if (categoryFromUrl) {
-      const formatted =
-        categoryFromUrl.charAt(0).toUpperCase() +
-        categoryFromUrl.slice(1).replace('-', ' ')
+  const categories = useMemo(
+    () => ['Todos', ...Array.from(new Set(products.map((p) => p.category)))],
+    [products]
+  )
 
-      const match = categories.find(
-        (c) =>
-          c.toLowerCase().replace(' ', '-') === categoryFromUrl
-      )
+  const selectedCategory = useMemo(() => {
+    if (!categoryFromUrl) return 'Todos'
 
-      if (match) {
-        setSelectedCategory(match)
-      }
-    }
-  }, [categoryFromUrl])
+    const match = categories.find(
+      (c) =>
+        c.toLowerCase().replace(/\s+/g, '-') ===
+        categoryFromUrl.toLowerCase()
+    )
+
+    return match ?? 'Todos'
+  }, [categoryFromUrl, categories])
 
   const toggleSize = (size: number) => {
     setSelectedSizes((prev) =>
@@ -101,17 +49,25 @@ function ProductList() {
   }
 
   const filteredProducts = useMemo(() => {
-    return mockProducts.filter((p) => {
+    return products.filter((p: PublicProduct) => {
       const matchCategory =
         selectedCategory === 'Todos'
           ? true
           : p.category === selectedCategory
 
-      const matchPrice = parsePrice(p.price) <= maxPrice
+      const matchPrice = p.price <= maxPrice
 
-      return matchCategory && matchPrice
+      const matchSize =
+        selectedSizes.length === 0 ||
+        selectedSizes.some(
+          (s) =>
+            (p.sizes.length && p.sizes.includes(s)) ||
+            (p.sizes.length === 0 && s >= p.minSize && s <= p.maxSize)
+        )
+
+      return matchCategory && matchPrice && matchSize
     })
-  }, [selectedCategory, maxPrice])
+  }, [products, selectedCategory, maxPrice, selectedSizes])
 
   const title =
     selectedCategory === 'Todos'
@@ -119,20 +75,27 @@ function ProductList() {
       : selectedCategory
 
   const handleCategoryChange = (cat: string) => {
-    setSelectedCategory(cat)
-
     const slug =
       cat === 'Todos'
         ? '/product'
-        : `/product?category=${cat
-            .toLowerCase()
-            .replace(' ', '-')}`
+        : `/product?category=${cat.toLowerCase().replace(/\s+/g, '-')}`
 
     router.push(slug)
   }
 
   return (
     <div className="bg-white py-10 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        {selectedCategory !== 'Todos' && (
+          <ProductBreadcrumb
+            crumbs={[
+              { label: 'Productos', href: '/product' },
+              { label: selectedCategory },
+            ]}
+          />
+        )}
+      </div>
+
       <div className="flex flex-col md:flex-row gap-8">
 
         {/* SIDEBAR */}
@@ -215,63 +178,74 @@ function ProductList() {
             {title}
           </h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProducts.map((product) => (
-              <Link
-                href={`/product/${product.slug}`}
-                key={product.id}
-              >
-                <article
-                  onMouseEnter={() => setHoveredId(product.id)}
-                  onMouseLeave={() => setHoveredId(null)}
-                  className="rounded-2xl shadow-md hover:shadow-xl transition overflow-hidden bg-white"
+          {loading ? (
+            <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-gray-500">
+              Cargando productos...
+            </div>
+          ) : filteredProducts.length === 0 ? (
+            <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-gray-500">
+              No hay productos que coincidan con tu búsqueda.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredProducts.map((product) => (
+                <Link
+                  href={`/product/${product.slug}`}
+                  key={product.id}
                 >
-                  <div className="h-64 flex items-center justify-center p-6 relative">
-                    <div
-                      className={`absolute inset-0 bg-slate-100/50 transition-opacity ${
-                        hoveredId === product.id
-                          ? 'opacity-100'
-                          : 'opacity-0'
-                      }`}
-                    />
-
-                    <div
-                      className={`relative w-full h-full transition-transform duration-300 ${
-                        hoveredId === product.id
-                          ? 'scale-105'
-                          : 'scale-100'
-                      }`}
-                    >
-                      <Image
-                        src={product.image}
-                        alt={product.name}
-                        fill
-                        className="object-contain"
+                  <article
+                    onMouseEnter={() => setHoveredId(product.id)}
+                    onMouseLeave={() => setHoveredId(null)}
+                    className="rounded-2xl shadow-md hover:shadow-xl transition overflow-hidden bg-white"
+                  >
+                    <div className="h-64 flex items-center justify-center p-6 relative">
+                      <div
+                        className={`absolute inset-0 bg-slate-100/50 transition-opacity ${
+                          hoveredId === product.id
+                            ? 'opacity-100'
+                            : 'opacity-0'
+                        }`}
                       />
+
+                      <div
+                        className={`relative w-full h-full transition-transform duration-300 ${
+                          hoveredId === product.id
+                            ? 'scale-105'
+                            : 'scale-100'
+                        }`}
+                      >
+                        <Image
+                          src={product.image}
+                          alt={product.name}
+                          fill
+                          className="object-contain"
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        />
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="p-5 flex flex-col gap-2">
-                    <span className="text-xs text-slate-500">
-                      {product.category}
-                    </span>
+                    <div className="p-5 flex flex-col gap-2">
+                      <span className="text-xs text-slate-500">
+                        {product.category}
+                      </span>
 
-                    <h3 className="font-semibold text-lg">
-                      {product.name}
-                    </h3>
+                      <h3 className="font-semibold text-lg">
+                        {product.name}
+                      </h3>
 
-                    <span className="text-emerald-700 font-bold text-xl">
-                      {product.price}
-                    </span>
+                      <span className="text-emerald-700 font-bold text-xl">
+                        {formatPrice(product.price)}
+                      </span>
 
-                    <button className="mt-3 bg-slate-900 text-white py-2 rounded-lg">
-                      Ver producto
-                    </button>
-                  </div>
-                </article>
-              </Link>
-            ))}
-          </div>
+                      <button className="mt-3 bg-slate-900 text-white py-2 rounded-lg">
+                        Ver producto
+                      </button>
+                    </div>
+                  </article>
+                </Link>
+              ))}
+            </div>
+          )}
         </section>
       </div>
     </div>
@@ -279,5 +253,15 @@ function ProductList() {
 }
 
 export default function Page() {
-  return <ProductList />
+  return (
+    <Suspense
+      fallback={
+        <div className="p-10 text-center text-gray-500">
+          Cargando productos...
+        </div>
+      }
+    >
+      <ProductList />
+    </Suspense>
+  )
 }

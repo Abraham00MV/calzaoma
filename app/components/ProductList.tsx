@@ -16,7 +16,7 @@ const mockProducts = [
     name: 'Nike Zoom', 
     price: '$150.000',
     image: '/shoes/nike-zoom.png',
-    category: 'Tenis running'
+    category: 'Tenis deportivos'
   },
   { 
     id: 3, 
@@ -30,7 +30,7 @@ const mockProducts = [
     name: 'Puma Omnia', 
     price: '$130.000',
     image: '/shoes/puma-omnia.png',
-    category: 'Tenis urbanos'
+    category: 'Tenis deportivos'
   },
 ]
 

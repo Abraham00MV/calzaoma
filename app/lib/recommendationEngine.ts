@@ -1,7 +1,18 @@
-import { Product } from "../data/products";
+type RecommendedProduct = {
+  id: string | number;
+  slug: string;
+  name: string;
+  price: number;
+  image: string;
+  category: string;
+  useType: "trabajo" | "deporte" | "estilo";
+  comfortScore: number;
+  minSize: number;
+  maxSize: number;
+};
 
 export const getRecommendedProducts = (
-  products: Product[],
+  products: RecommendedProduct[],
   foot: number,
   use: string,
   comfort: string

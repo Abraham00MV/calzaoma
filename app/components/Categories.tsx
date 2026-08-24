@@ -3,27 +3,30 @@
 import Image from 'next/image'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { PRODUCT_CATEGORIES } from '@/app/lib/categories'
 
-const categories = [
-  {
-    id: 1,
-    name: 'Sandalias',
+const categoryMeta: Record<string, { image: string; description: string }> = {
+  Sandalias: {
     image: '/categories/sandals.webp',
     description: 'Comodidad para el día a día',
   },
-  {
-    id: 2,
-    name: 'Tenis deportivos',
+  'Tenis deportivos': {
     image: '/categories/sport-shoes.webp',
     description: 'Rendimiento y estilo',
   },
-  {
-    id: 3,
-    name: 'Zapatos para dama',
+  'Zapatos para dama': {
     image: '/categories/women-shoes.webp',
     description: 'Elegancia en cada paso',
   },
-]
+}
+
+const categories = PRODUCT_CATEGORIES.map((name, index) => ({
+  id: index + 1,
+  name,
+  image: categoryMeta[name]?.image ?? '/categories/sandals.webp',
+  description:
+    categoryMeta[name]?.description ?? '',
+}))
 
 function slugify(text: string) {
   return text

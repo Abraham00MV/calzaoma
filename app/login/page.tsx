@@ -51,10 +51,11 @@ const handleLogin = async () => {
     return
   }
 
-  const { data: profiles, error: profileError } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('*')
+    .select('role')
     .eq('id', user.id)
+    .maybeSingle()
 
   if (profileError) {
     setError(profileError.message)
@@ -62,15 +63,23 @@ const handleLogin = async () => {
     return
   }
 
-  if (!profiles || profiles.length === 0) {
-    setError('No existe perfil para este usuario.')
-    setLoading(false)
-    return
+  let role = profile?.role
+
+  // Si el usuario no tiene perfil, se crea con rol de cliente
+  if (!role) {
+    const { error: insertError } = await supabase
+      .from('profiles')
+      .upsert({ id: user.id, role: 'customer' })
+
+    if (insertError) {
+      // No bloqueamos el acceso: continúa como cliente
+      console.warn('No se pudo crear el perfil:', insertError.message)
+    }
+
+    role = 'customer'
   }
 
-  const profile = profiles[0]
-
-  if (profile.role === 'admin') {
+  if (role === 'admin') {
     router.push('/admin')
   } else {
     router.push('/account')
@@ -93,7 +102,7 @@ const handleLogin = async () => {
             return
         }
 
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
             email,
             password,
             options: {
@@ -109,7 +118,13 @@ const handleLogin = async () => {
             return
         }
 
-        router.push('/signup-success')
+        // Si la confirmación de correo está desactivada, Supabase crea
+        // la sesión de inmediato: el usuario entra directo a su cuenta.
+        if (data.session) {
+            router.push('/account')
+        } else {
+            router.push('/signup-success')
+        }
     }
 
     const handleSubmit = async () => {
@@ -159,7 +174,13 @@ const handleLogin = async () => {
                     </button>
                 </div>
 
-                <div className="space-y-4">
+                <form
+                    className="space-y-4"
+                    onSubmit={(e) => {
+                        e.preventDefault()
+                        handleSubmit()
+                    }}
+                >
 
                     {mode === 'signup' && (
                         <div>
@@ -260,7 +281,7 @@ const handleLogin = async () => {
                     )}
 
                     <button
-                        onClick={handleSubmit}
+                        type="submit"
                         disabled={loading}
                         className="w-full bg-[#c1d8f0] text-black py-3 rounded-xl font-semibold hover:opacity-90 transition disabled:opacity-50"
                     >
@@ -270,7 +291,7 @@ const handleLogin = async () => {
                                 ? 'Iniciar sesión'
                                 : 'Crear cuenta'}
                     </button>
-                </div>
+                </form>
 
             </div>
         </main>

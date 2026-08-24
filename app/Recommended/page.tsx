@@ -1,13 +1,16 @@
 'use client'
 
+import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { products } from '../data/products'
+import { useProducts } from '../lib/products'
 import { getRecommendedProducts } from '../lib/recommendationEngine'
 import Link from 'next/link'
 import Image from 'next/image'
 
-export default function RecommendedPage() {
+function RecommendedContent() {
   const params = useSearchParams()
+
+  const { products, loading } = useProducts()
 
   const footLength = Number(params.get('foot'))
   const useType = params.get('use') || ''
@@ -37,7 +40,13 @@ export default function RecommendedPage() {
       </div>
 
       {/* 🔹 EMPTY STATE */}
-      {recommended.length === 0 && (
+      {loading ? (
+        <div className="max-w-7xl mx-auto px-6 text-center py-20">
+          <div className="bg-white shadow-lg rounded-2xl p-10 border text-gray-500">
+            Cargando recomendaciones...
+          </div>
+        </div>
+      ) : recommended.length === 0 && (
         <div className="max-w-2xl mx-auto px-6 text-center py-20">
           <div className="bg-white shadow-lg rounded-2xl p-10 border">
             <h2 className="text-2xl font-semibold text-slate-900 mb-3">
@@ -60,7 +69,7 @@ export default function RecommendedPage() {
       {/* 🔹 GRID */}
       <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
 
-        {recommended.map((p) => {
+        {!loading && recommended.map((p) => {
           const isPerfect = p.score >= 5
 
           return (
@@ -137,5 +146,19 @@ export default function RecommendedPage() {
         })}
       </div>
     </section>
+  )
+}
+
+export default function RecommendedPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center text-gray-500">
+          Cargando...
+        </div>
+      }
+    >
+      <RecommendedContent />
+    </Suspense>
   )
 }

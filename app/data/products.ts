@@ -6,7 +6,7 @@ export type Product = {
   image: string
   category: string
 
-  useType: 'trabajo' | 'deporte'
+  useType: 'trabajo' | 'deporte' | 'estilo'
   comfortScore: number
   minSize: number
   maxSize: number
@@ -18,7 +18,7 @@ export const products: Product[] = [
     slug: 'new-balance-530',
     name: 'New Balance 530',
     price: 120000,
-    image: '/shoes/balance-530.png',
+    image: '/shoes/Balance-530.png',
     category: 'Tenis deportivos',
     useType: 'deporte',
     comfortScore: 9,
@@ -31,7 +31,7 @@ export const products: Product[] = [
     name: 'Nike Zoom',
     price: 150000,
     image: '/shoes/nike-zoom.png',
-    category: 'Tenis running',
+    category: 'Tenis deportivos',
     useType: 'deporte',
     comfortScore: 8,
     minSize: 25,
@@ -42,7 +42,7 @@ export const products: Product[] = [
     slug: 'puma-faster',
     name: 'Puma Faster',
     price: 110000,
-    image: '/shoes/puma-faster.png',
+    image: '/shoes/Puma-faster.png',
     category: 'Sandalias deportivas',
     useType: 'trabajo',
     comfortScore: 6,
@@ -54,8 +54,8 @@ export const products: Product[] = [
     slug: 'puma-omnia',
     name: 'Puma Omnia',
     price: 130000,
-    image: '/shoes/puma-omnia.png',
-    category: 'Tenis urbanos',
+    image: '/shoes/Puma-omnia.png',
+    category: 'Tenis deportivos',
     useType: 'trabajo',
     comfortScore: 7,
     minSize: 23,
