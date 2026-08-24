@@ -290,15 +290,8 @@ export default function AccountPage() {
                   </div>
 
                   <p className="text-gray-500 mb-6">
-                    Aún no tienes órdenes. Cuando realices un pedido, aparecerá aquí.
+                    Esta función estará disponible próximamente.
                   </p>
-
-                  <button
-                    onClick={() => router.push('/product')}
-                    className="bg-[#c1d8f0] text-black px-6 py-3 rounded-xl font-medium hover:opacity-90 transition"
-                  >
-                    Explorar productos
-                  </button>
                 </div>
               </>
             )}
